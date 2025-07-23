@@ -16,12 +16,56 @@
 #define DISP_STATE_ENWAIT           7
 #define DISP_STATE_MCURSOR          8
 
-#define DISP_BUFFER_SIZE 32U
+#define DISP_BUFFER_SIZE    (unsigned char) 32
 
 #define DISP_FRONTBUFFER    (unsigned char)   0
 #define DISP_BACKBUFFER     (unsigned char)   DISP_BUFFER_SIZE/2
 
+#define LCD_1x16_type1
 
+#ifdef LCD_4x40
+#define DISP_COLUMNS        (unsigned char) 16
+#define DISP_ROWS           (unsigned char) 2
+#endif
+
+#ifdef LCD_2x40
+#define DISP_COLUMNS        (unsigned char) 40
+#define DISP_ROWS           (unsigned char) 2
+#endif
+
+#ifdef LCD_4x20
+#define DISP_COLUMNS        (unsigned char) 20
+#define DISP_ROWS           (unsigned char) 4
+#endif
+
+#ifdef LCD_2x20
+#define DISP_COLUMNS        (unsigned char) 20
+#define DISP_ROWS           (unsigned char) 2
+#endif
+
+#ifdef LCD_4x16
+#define DISP_COLUMNS        (unsigned char) 16
+#define DISP_ROWS           (unsigned char) 2
+#endif
+
+#ifdef LCD_2x16
+#define DISP_COLUMNS        (unsigned char) 16
+#define DISP_ROWS           (unsigned char) 2
+#endif
+
+#ifdef LCD_1x16_type1
+#define DISP_COLUMNS        (unsigned char) 8
+#define DISP_ROWS           (unsigned char) 2
+#endif
+
+#ifdef LCD_1x16_type2
+#define DISP_COLUMNS        (unsigned char) 16
+#define DISP_ROWS           (unsigned char) 1
+#endif
+
+#ifndef DISP_COLUMNS | DISP_ROWS
+#error "Display type is not defined!"
+#endif
 
 void lcd_command( uint8_t command );
 void lcd_write_nibble( uint8_t data );

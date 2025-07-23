@@ -2,8 +2,8 @@
 #define __MISC_DEF_H__
 
 
-#define __AVR_ATmega16__
-#define F_CPU 14745600UL
+#define __AVR_ATmega48__
+#define F_CPU 8000000UL
 
 #include <avr/io.h>
 #include <avr/interrupt.h>
@@ -28,11 +28,6 @@
 
 #define STRINGIFY(x) #x
 #define TOSTRING(x) STRINGIFY(x)
-
-#define EEP_PRG_SIZE                    18
-#define EEP_PRG_AMOUNT                  20
-
-#define EEPROM_VARIABLES_COUNT          (uint8_t) 13
 
 
 #endif // __MISC_DEF_H__

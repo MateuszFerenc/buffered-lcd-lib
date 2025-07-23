@@ -18,6 +18,7 @@ unsigned char *get_buffer_address( void ){
     return &disp_linear_buff;
 }
 
+// TODO : adapt buffer switching to other display types
 void process_lcd_FSM( void ){
     static uint8_t disp_state = DISP_STATE_NOP, disp_last_state = DISP_STATE_NOP;
     static uint8_t disp_delay = 0, disp_temp_data = 0, disp_column_counter = 0;
@@ -29,12 +30,12 @@ void process_lcd_FSM( void ){
                 for (unsigned char buff_idx = buff_switch_offset; buff_idx < ( 4 + buff_switch_offset ); buff_idx++ ){
                     if ( ( disp_buffers_dirty >> buff_idx ) & 1 ){
                         disp_buffer_pointer = (unsigned char *)disp_linear_buff + (unsigned char)(buff_idx * 20);
-                        disp_column_counter = 20;
+                        disp_column_counter = DISP_COLUMNS;
                         disp_buffers_dirty &= ~( 1 << buff_idx );
-                        disp_state = DISP_STATE_MCURSOR;
+                        disp_state = DISP_STATE_MCURSOR; // a nie od razu DISP_STATE_PUTHDATA???
                         currentCol = 0;
-                        currentRow = buff_idx % 4;
-                        disp_temp_data = 0x80 | lcdRowStart[currentRow];
+                        currentRow = buff_idx % DISP_ROWS;
+                        disp_temp_data = 0x80 | lcdRowStart[currentRow]; // set DDRAM address
                         break;
                     }
                 }
@@ -53,7 +54,7 @@ void process_lcd_FSM( void ){
     if ( disp_state == DISP_STATE_MCURSOR ){
         disp_state = DISP_STATE_PUTHDATA;
         PIN_clear(RS_PORT, RS_PIN);
-        disp_temp_data = 0x80 | ( lcdRowStart[currentRow] + currentCol);      // lcd home command
+        disp_temp_data = 0x80 | ( lcdRowStart[currentRow] + currentCol);      // set DDRAM address
     }
 
     if ( disp_state == DISP_STATE_HOME ){
@@ -196,35 +197,38 @@ void lcd_write_nibble(uint8_t data){
     __wait_us(200);
 
     PIN_clear(EN_PORT, EN_PIN);
+    __wait_us(1);
     PIN_set(EN_PORT, EN_PIN);
+    __wait_us(1);
     PIN_clear(EN_PORT, EN_PIN);
 
     __wait_us(200);
 }
 
 void lcd_init(void){
-    for ( uint8_t enable_4b_mode = 0; enable_4b_mode < 3; enable_4b_mode++){
-        lcd_write_nibble(0x03);
-        __wait_us(5000);
-    }
-    lcd_write_nibble(0x02);
-    __wait_us(1000);
-    
-    lcd_command(0x28);
-    
-    lcd_command(0x01);     // lcd clear
-    __wait_us(2000);
+    __wait_us(15000);
+    lcd_write_nibble(0x03);
+    __wait_us(4120);
+    lcd_write_nibble(0x03);
+    __wait_us(120);
+    lcd_write_nibble(0x03);
+    __wait_us(120);
 
-    lcd_command(0x0C);
-    lcd_command(0x06);
+    lcd_write_nibble(0x02);
+    __wait_us(100);
+    
+    lcd_command(0x28);      // Function set, 4b interface, two lane display (yes 1x16 is configured as 2x8), 5x8 font
+
+    lcd_command(0x0C);      // display on, no cursor
+    lcd_command(0x06);      // Entry mode set, increment on write
     
     lcdRowStart[0] = 0x00;
     lcdRowStart[1] = 0x40;
-    lcdRowStart[2] = 20;            // Number of columns
-    lcdRowStart[3] = 0x50 + 4;        // plus number of rows
+    lcdRowStart[2] = DISP_COLUMNS;            // Number of columns
+    lcdRowStart[3] = 0x50 + DISP_ROWS;        // plus number of rows
     
-    lcd_command(0x02);      // lcd home
-    __wait_us(2000);
+    lcd_command(0x01);      // lcd clear
+    __wait_us(1500);
 
     PIN_set(RS_PORT, RS_PIN);
     lcd_write_nibble('O' >> 4);

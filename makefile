@@ -12,8 +12,8 @@ C_DEPS = $(OBJ:.o=.d)
 # OBJ += $(notdir $(LIB_SRC:.c=.o))
 
 
-DEVICE = atmega16a
-FREQ = 14745600
+DEVICE = atmega48
+FREQ = 8000000UL
 
 OBJCOPY = avr-objcopy
 AVRSIZE = avr-size
@@ -53,7 +53,7 @@ CFLAGS += -Wa,-adhlns=$(OUTPUT_DIR)/./$(@F:.o=.s)
 #  	-Wa,...:      tell GCC to pass this to the assembler.
 #    	-adhlns...: create assembler listing
 
-MORE_CFLAGS = -MMD -MP -MF $(OUTPUT_DIR)/./$(@F:.o=.d) -MT $(OUTPUT_DIR)/./$(@F)
+MORE_CFLAGS = -MMD -MP -MF $(OUTPUT_DIR)/./$(@F:.o=.d) -MT $@
 #-MMD -MP -MF$(notdir $($<:.c=.d)) -MT$(notdir $($<:.c=.d))
 #   -MD                         Generate make dependencies and compile.
 #   -MF <file>                  Write dependency output to the given file.
@@ -87,9 +87,7 @@ ifneq ($(strip $(C_DEPS)),)
 endif
 endif
 
--include $(C_DEPS)
-
-all: build size
+all: size
 
 build: $(OUTPUT_DIR)/./$(TARGET).hex
 eep: $(OUTPUT_DIR)/./$(TARGET).eep
@@ -149,5 +147,10 @@ program_eeprom:	$(OUTPUT_DIR)/./${TARGET}.eep
 	@echo ######   Writing $< to $(DEVICE) EEPROM   ######   
 	${AVRDUDE} ${AVRDUDE_FLAGS} -U eeprom:w:$< -B 0.5
 
-.DEFAULTGOAL: all
-.PHONY: all build eep debug install program_eeprom clean
+read_fuses:
+	@echo
+	@echo ######   Reading $(DEVICE) fuses   ######   
+	${AVRDUDE} ${AVRDUDE_FLAGS} -U hfuse:r:-:h -U lfuse:r:-:h -B 0.5
+
+.DEFAULT_GOAL := all
+.PHONY := all build eep debug install program_eeprom clean read_fuses

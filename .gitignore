@@ -1,0 +1,17 @@
+*.d
+*.o
+*.ko
+*.obj
+*.elf
+*.map
+*.a
+*.hex
+*.lst
+*.eep
+
+Bin/*.txt
+Bin/*.s
+
+**/.vscode
+**/.venv
+**/venv
